@@ -5,7 +5,6 @@ import psycopg2
 #функция создания структуры базыданных SQL
 def crt_SQL(dbname_name,user_name,password_name,host_name):
     print("Запуск SQL модуля")
-    Error_compt=0
     conn_SQL =  psycopg2.connect(dbname=dbname_name, user=user_name, password=password_name, host=host_name, port="5432")
     cursor = conn_SQL.cursor()
 # Создание Farm_markets
@@ -60,7 +59,6 @@ def crt_SQL(dbname_name,user_name,password_name,host_name):
        Tofu VARCHAR(50) NULL,
        WildHarvested VARCHAR(50) NULL,
        Update_Time VARCHAR(50) 
-       Stars VARCHAR(50)
        );
        ''')
     cursor.execute("SELECT to_regclass('public.Farm_markets');")
@@ -69,8 +67,7 @@ def crt_SQL(dbname_name,user_name,password_name,host_name):
        print("Таблица Farm_markets создана успешно ")
     else:
        print("Ошибка создания таблицы Farm_markets ")
-       Error_compt=Error_compt+1
-# Создание Markets 
+# Создание Markets
     cursor.execute('''
        CREATE TABLE IF NOT EXISTS Markets_info (
        FMID INTEGER PRIMARY KEY ,
@@ -93,7 +90,6 @@ def crt_SQL(dbname_name,user_name,password_name,host_name):
        print("Таблица Markets_info создана успешно ")
     else:
        print("Ошибка создания таблицы Markets_info ")
-       Error_compt=Error_compt+1
     conn_SQL.commit()
     try:
       cursor.execute('''
@@ -109,10 +105,11 @@ def crt_SQL(dbname_name,user_name,password_name,host_name):
     conn_SQL.close()
 
 #функция перевода информации из CSV-файла в SQL
-def opn_CSV(dbname_name,user_name,password_name,host_name,file_name):
+def opn_CSV(dbname_name,user_name,password_name,host_name):
   print("Запуск CSV модуля")
   conn_SQL =  psycopg2.connect(dbname=dbname_name, user=user_name, password=password_name, host=host_name, port="5432")
   cursor = conn_SQL.cursor()
+  file_name=input('введите адрес файа csv: ')
   csv_ferm=open(file_name, mode='r',encoding='utf-8')
   read_csv = csv.reader(csv_ferm)
   next(read_csv)
@@ -127,42 +124,6 @@ def opn_CSV(dbname_name,user_name,password_name,host_name,file_name):
     conn_SQL.close()
     print("Данные сохранены")
 
-#функция редактирования информации в SQL
-def Mod_SQL(dbname_name,user_name,password_name,host_name):
-  conn_SQL = psycopg2.connect(dbname=dbname_name, user=user_name, password=password_name, host=host_name, port="5432")
-  cursor = conn_SQL.cursor()
-  while True:
-    i=0
-    try:
-      Del_info=input("хотите удалить строку? (yes/no) ")
-      if Del_info=='yes':
-        Del_id = input("введите ID магазина ")
-        cursor.execute("DELETE * FROM Farm_markets WHERE Name = (%s)",(Del_id))
-        print (f"строка с ID {1}  удалена",Del_id)
-    except:
-      print("ошибка ")
-      i=i+1
-    try:
-      Add_info = input("хотите поставить оценку? (yes/no) ")
-      if Add_info == 'yes':
-          Add_star = input("введите количество '*'")
-          cursor.execute("INSERT INTO Farm_markets (Stars) VALUES (%s)", (Add_star))
-          print(f"оценка {1} введена  ", Add_star)
-    except:
-      print("ошибка ")
-      i=i+1
-    try:
-      Fin_info = input("хотите завершить работу? (yes/no) ")
-      if Fin_info == 'yes':
-        break
-    except:
-      print("ошибка ")
-      i=i+1
-    finally:
-      if i==3:
-         break
-
-
 
 
 # Начало программы
@@ -170,7 +131,6 @@ User_name=input('Введите имя пользователя ')
 Password_name=input('Введите пароль ')
 dbname_name=input('Введите название базы данных ')
 Host_name=input('Введите название хоста ')
-Addr_name=input('введите адрес файа csv: ')
 
 try:
   crt_SQL(dbname_name,User_name,Password_name,Host_name)
@@ -178,15 +138,8 @@ except:
   print("Ошибка создания SQL-файла ")
 else:
   try:
-    opn_CSV(dbname_name,User_name,Password_name,Host_name,Addr_name)
+    opn_CSV(dbname_name,User_name,Password_name,Host_name)
   except:
     print("Ошибка анализа CSV-файла ")
   else:
     print("Перевод данных из CSV-файла в SQL прошел успешно ")
-try:
-  Mod_SQL(dbname_name,User_name,Password_name,Host_name)
-except:
-    print("Ошибка внесения изменений в SQL-файл ")
-
-
-
